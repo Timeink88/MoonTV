@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
   actions: write
+  workflows: write # <-- 新增这一行来解决问题
 
 jobs:
   sync_latest_from_upstream:
@@ -29,17 +30,18 @@ jobs:
           upstream_sync_branch: main
           target_sync_branch: main
           target_repo_token: ${{ secrets.GITHUB_TOKEN }}
+          # test_mode: true # (Optional) Uncomment for a dry run
 
       - name: Sync check
         if: failure()
         run: |
-          echo "[Error] Due to a change in the workflow file of the upstream repository, GitHub has automatically suspended the scheduled automatic update. You need to manually sync your fork."
+          echo "[Error] The sync action failed. This might be due to a change in the upstream repository's workflow files. Please check the action logs for details."
           exit 1
-
+          
       - name: Delete workflow runs
         uses: Mattraks/delete-workflow-runs@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
+          仓库: ${{ github.repository }}
           retain_days: 0
           keep_minimum_runs: 2
